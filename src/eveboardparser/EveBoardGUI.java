@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package eveboardparser;
 
 import java.awt.*;
@@ -11,30 +10,45 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.JTable;
 import javax.swing.table.*;
 
 /**
  *
  * @author Alex
  */
-public class EveBoardGUI extends javax.swing.JFrame {
+public class EveBoardGUI extends javax.swing.JFrame implements Serializable {
 
-    HashMap<String, String> skillHash = new HashMap();  
+    HashMap<String, Integer> skillHash = new HashMap();
+    HashMap<String, Integer> baseSkills = new HashMap();
+    HashMap<String, Integer> basiliskSkills = new HashMap();
+    HashMap<String, Integer> scimitarSkills = new HashMap();
+    HashMap<String, Integer> vindicatorSkills = new HashMap();
+    HashMap<String, Integer> macharielSkills = new HashMap();
+    HashMap<String, Integer> nightmareSkills = new HashMap();
     String[] shipTypes = {"Nightmare", "Machariel", "Vindicator", "Basilisk", "Scimitar"};
-    
+    String[] skillLists = {"Base Skills", "Nightmare", "Machariel", "Vindicator", "Basilisk", "Scimitar"};
+    String[] manualInput;
+    boolean toggled = false;
+
     /**
      * Creates new form EveBoardGUI
      */
     public EveBoardGUI() {
+        loadSkillLists();
         initComponents();
         shipTypeCombox.setModel(new javax.swing.DefaultComboBoxModel(shipTypes));
         shipTypeCombox.setSelectedItem(1);
         skillTable.setAutoCreateRowSorter(true);
+        skillTable.setShowGrid(true);
         skillTable.getTableHeader().setResizingAllowed(false);
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -44,18 +58,154 @@ public class EveBoardGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        popoutManualInput = new javax.swing.JDialog();
+        scrollPane = new javax.swing.JScrollPane();
+        dialogInput = new javax.swing.JTextArea();
+        useDataDialogButton = new javax.swing.JButton();
+        popoutConfig = new javax.swing.JDialog();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        skillEditorTable = new javax.swing.JTable();
+        saveSkillListButton = new javax.swing.JButton();
+        skillListSelector = new javax.swing.JComboBox();
+        loadSkillListButton = new javax.swing.JButton();
+        skillEditorAlert = new javax.swing.JLabel();
+        loadDefaultButton = new javax.swing.JButton();
         eveboardLink = new javax.swing.JTextField();
         checkCharButton = new javax.swing.JButton();
         shipTypeCombox = new javax.swing.JComboBox();
         jLabel4 = new javax.swing.JLabel();
         errorText = new javax.swing.JLabel();
         jScrollPane4 = new javax.swing.JScrollPane();
-        skillTable = new javax.swing.JTable();
+        skillTable = new javax.swing.JTable(); //skillTable.setDefaultRenderer(Integer.class, new myRenderer());
+        ;
+        manualInputButton = new javax.swing.JButton();
+        configButton = new javax.swing.JButton();
+        clearDataButton = new javax.swing.JButton();
+
+        dialogInput.setColumns(20);
+        dialogInput.setRows(5);
+        scrollPane.setViewportView(dialogInput);
+
+        useDataDialogButton.setText("Use Data");
+        useDataDialogButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                useDataDialogButtonMouseClicked(evt);
+            }
+        });
+
+        javax.swing.GroupLayout popoutManualInputLayout = new javax.swing.GroupLayout(popoutManualInput.getContentPane());
+        popoutManualInput.getContentPane().setLayout(popoutManualInputLayout);
+        popoutManualInputLayout.setHorizontalGroup(
+            popoutManualInputLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(popoutManualInputLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(popoutManualInputLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(scrollPane)
+                    .addComponent(useDataDialogButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        popoutManualInputLayout.setVerticalGroup(
+            popoutManualInputLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, popoutManualInputLayout.createSequentialGroup()
+                .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(useDataDialogButton)
+                .addContainerGap(27, Short.MAX_VALUE))
+        );
+
+        popoutConfig.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+
+        skillEditorTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Skill Name", "Current Set Level", "New Level"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.Integer.class, java.lang.Integer.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(skillEditorTable);
+        if (skillEditorTable.getColumnModel().getColumnCount() > 0) {
+            skillEditorTable.getColumnModel().getColumn(0).setResizable(false);
+            skillEditorTable.getColumnModel().getColumn(1).setResizable(false);
+            skillEditorTable.getColumnModel().getColumn(2).setResizable(false);
+        }
+
+        saveSkillListButton.setText("Save");
+        saveSkillListButton.setFocusable(false);
+        saveSkillListButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                saveSkillListButtonMouseClicked(evt);
+            }
+        });
+
+        skillListSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        skillListSelector.setFocusable(false);
+
+        loadSkillListButton.setText("Load");
+        loadSkillListButton.setFocusable(false);
+        loadSkillListButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                loadSkillListButtonMouseClicked(evt);
+            }
+        });
+
+        loadDefaultButton.setText("Load Defaults");
+        loadDefaultButton.setFocusable(false);
+        loadDefaultButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                loadDefaultButtonMouseClicked(evt);
+            }
+        });
+
+        javax.swing.GroupLayout popoutConfigLayout = new javax.swing.GroupLayout(popoutConfig.getContentPane());
+        popoutConfig.getContentPane().setLayout(popoutConfigLayout);
+        popoutConfigLayout.setHorizontalGroup(
+            popoutConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(popoutConfigLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(popoutConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
+                    .addGroup(popoutConfigLayout.createSequentialGroup()
+                        .addComponent(saveSkillListButton)
+                        .addGap(10, 10, 10)
+                        .addComponent(loadDefaultButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(skillEditorAlert, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(loadSkillListButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(skillListSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        popoutConfigLayout.setVerticalGroup(
+            popoutConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(popoutConfigLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(popoutConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(popoutConfigLayout.createSequentialGroup()
+                        .addComponent(skillEditorAlert, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addGroup(popoutConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(saveSkillListButton)
+                        .addComponent(skillListSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(loadSkillListButton)
+                        .addComponent(loadDefaultButton))))
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(500, 391));
 
         checkCharButton.setText("Check Char!");
+        checkCharButton.setFocusable(false);
         checkCharButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 checkCharButtonMouseClicked(evt);
@@ -66,8 +216,11 @@ public class EveBoardGUI extends javax.swing.JFrame {
 
         jLabel4.setText("Character Sheet");
 
-        errorText.setEnabled(false);
+        errorText.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        errorText.setForeground(new java.awt.Color(255, 0, 0));
+        errorText.setFocusable(false);
 
+        skillTable.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         skillTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -76,15 +229,47 @@ public class EveBoardGUI extends javax.swing.JFrame {
                 "Skill Name", "Expected Level", "Current Level"
             }
         ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.Integer.class, java.lang.Integer.class
+            };
             boolean[] canEdit = new boolean [] {
                 false, false, false
             };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
+        skillTable.setGridColor(new java.awt.Color(0, 0, 0));
         jScrollPane4.setViewportView(skillTable);
+
+        manualInputButton.setText("Manual Input");
+        manualInputButton.setFocusable(false);
+        manualInputButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                manualInputButtonMouseClicked(evt);
+            }
+        });
+
+        configButton.setText("Config");
+        configButton.setFocusable(false);
+        configButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                configButtonMouseClicked(evt);
+            }
+        });
+
+        clearDataButton.setText("Clear Data");
+        clearDataButton.setFocusable(false);
+        clearDataButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                clearDataButtonMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -93,36 +278,45 @@ public class EveBoardGUI extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane4)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(eveboardLink, javax.swing.GroupLayout.PREFERRED_SIZE, 314, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(clearDataButton)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(shipTypeCombox, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(checkCharButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(checkCharButton, javax.swing.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
-                            .addComponent(shipTypeCombox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(errorText, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(configButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(manualInputButton, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addComponent(errorText, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(26, 26, 26)
-                        .addComponent(errorText, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(shipTypeCombox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(checkCharButton)
-                            .addComponent(eveboardLink, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(shipTypeCombox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(configButton)
+                        .addComponent(clearDataButton))
+                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(eveboardLink, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(manualInputButton)
+                        .addComponent(checkCharButton)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(errorText, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -130,174 +324,316 @@ public class EveBoardGUI extends javax.swing.JFrame {
 
     private void checkCharButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_checkCharButtonMouseClicked
         errorText.setText("");
+        if (eveboardLink.getText().contains(" ") || !eveboardLink.getText().contains("eveboard")) {
+            errorText.setText("Please enter a valid Eveboard link");
+        } else {
+            skillHash.clear();
+            DefaultTableModel model = (DefaultTableModel) skillTable.getModel();
+            model.setRowCount(0);
+            getCharacter();
+            checkSkills((String) shipTypeCombox.getSelectedItem());
+            resizeColumnWidth(skillTable);
+            if (!toggled) {
+                skillTable.getRowSorter().toggleSortOrder(2);
+                toggled = true;
+            }
+        }
+    }//GEN-LAST:event_checkCharButtonMouseClicked
+
+    private void manualInputButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_manualInputButtonMouseClicked
+        popoutManualInput.pack();
+        popoutManualInput.setVisible(true);
+    }//GEN-LAST:event_manualInputButtonMouseClicked
+
+    private void useDataDialogButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_useDataDialogButtonMouseClicked
+        manualInput = dialogInput.getText().split("\\n");
         skillHash.clear();
         DefaultTableModel model = (DefaultTableModel) skillTable.getModel();
         model.setRowCount(0);
-        getCharacter();        
-        baseSkills();
-        if(shipTypeCombox.getSelectedItem().equals("Scimitar")){scimitar();}else if(shipTypeCombox.getSelectedItem().equals("Basilisk")){basilisk();}
-            else if(shipTypeCombox.getSelectedItem().equals("Nightmare")){nightmare();} else if(shipTypeCombox.getSelectedItem().equals("Machariel")){machariel();}
-                else if(shipTypeCombox.getSelectedItem().equals("Vindicator")){vindicator();}        
-    }//GEN-LAST:event_checkCharButtonMouseClicked
+        getCharacterFromInput();
+        checkSkills((String) shipTypeCombox.getSelectedItem());
+        resizeColumnWidth(skillTable);
+        if (!toggled) {
+            skillTable.getRowSorter().toggleSortOrder(2);
+            toggled = true;
+        }
+    }//GEN-LAST:event_useDataDialogButtonMouseClicked
 
-    private void checkSkill(String skillName, int skillLevel){        
+    private void configButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_configButtonMouseClicked
+        popoutConfig.pack();
+        popoutConfig.setVisible(true);
+        skillListSelector.setModel(new javax.swing.DefaultComboBoxModel(skillLists));
+        skillListSelector.setSelectedItem(1);
+        skillEditorTable.setShowGrid(true);
+        skillEditorTable.getTableHeader().setResizingAllowed(false);
+    }//GEN-LAST:event_configButtonMouseClicked
+
+    private void loadSkillListButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loadSkillListButtonMouseClicked
+        loadSkills();
+    }//GEN-LAST:event_loadSkillListButtonMouseClicked
+
+    private void saveSkillListButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_saveSkillListButtonMouseClicked
+        HashMap hm = getHash((String) skillListSelector.getSelectedItem());
+        for (int i = 0; i < skillEditorTable.getRowCount(); i++) {
+            if ((Integer) skillEditorTable.getValueAt(i, 2) != null) {
+                hm.put((String) skillEditorTable.getValueAt(i, 0), (Integer) skillEditorTable.getValueAt(i, 2));                
+            }
+        }
+        loadSkills();
+        saveSkillLists();
+        skillEditorAlert.setText("saved!");
+    }//GEN-LAST:event_saveSkillListButtonMouseClicked
+
+    private void clearDataButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_clearDataButtonMouseClicked
         DefaultTableModel model = (DefaultTableModel) skillTable.getModel();
-        String skillLvl = skillHash.get(skillName);
-        if(skillLvl != null){
-            int level = Integer.parseInt(skillLvl);
-            if(level >= skillLevel){
-                Object[] row = {skillName, skillLevel, level};                
+        model.setRowCount(0);
+    }//GEN-LAST:event_clearDataButtonMouseClicked
+
+    private void loadDefaultButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loadDefaultButtonMouseClicked
+        addSkills("baseSkills");
+        addSkills("basiliskSkills");
+        addSkills("scimitarSkills");
+        addSkills("vindicatorSkills");
+        addSkills("macharielSkills");
+        addSkills("nightmareSkills");
+        saveSkillLists();
+        loadSkills();
+    }//GEN-LAST:event_loadDefaultButtonMouseClicked
+
+    private void loadSkills() {
+        DefaultTableModel model = (DefaultTableModel) skillEditorTable.getModel();
+        model.setRowCount(0);
+        Integer[] skillLevels = {0, 1, 2, 3, 4, 5};
+        String hashName = (String) skillListSelector.getSelectedItem();
+
+        for (Map.Entry<String, Integer> entry : (Set<Entry>) getHash(hashName).entrySet()) {
+            String skillName = entry.getKey();
+            int skillLevel = entry.getValue();
+            JComboBox jcb = new JComboBox();
+            jcb.setModel(new javax.swing.DefaultComboBoxModel(skillLevels));                      
+            Object[] row = {skillName, skillLevel};
+            skillEditorTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(jcb));             
+            model.addRow(row);
+        }
+    }
+
+    private void checkSkills(String shipType) {
+        DefaultTableModel model = (DefaultTableModel) skillTable.getModel();
+        for (Map.Entry<String, Integer> entry : baseSkills.entrySet()) {
+            String skillName = entry.getKey();
+            int skillLevel = entry.getValue();
+
+            if (skillHash.get(skillName) != null) {
+                Object[] row = {skillName, skillLevel, skillHash.get(skillName)};
                 model.addRow(row);
-            }
-            else{
-                Object[] row = {skillName, skillLevel, level};
+            } else {
+                Object[] row = {skillName, skillLevel, 0};
                 model.addRow(row);
             }
         }
-        else{
-            Object[] row = {skillName, skillLevel, 0};
-            model.addRow(row);            
+
+        for (Map.Entry<String, Integer> entry : (Set<Entry>) getHash(shipType).entrySet()) {
+            String skillName = entry.getKey();
+            int skillLevel = entry.getValue();
+
+            if (skillHash.get(skillName) != null) {
+                Object[] row = {skillName, skillLevel, skillHash.get(skillName)};
+                model.addRow(row);
+            } else {
+                Object[] row = {skillName, skillLevel, 0};
+                model.addRow(row);
+            }
         }
-    }  
-    
-    private void baseSkills(){
-        checkSkill("Hull Upgrades", 5);
-        checkSkill("Mechanics", 5);
-        checkSkill("CPU Management", 5);
-        checkSkill("Power Grid Management", 5);
-        checkSkill("Capacitor Management", 4);
-        checkSkill("Capacitor Systems Operation", 5);
-        checkSkill("EM Shield Compensation", 4);
-        checkSkill("Shield Management", 4);
-        checkSkill("Shield Operation", 4);
-        checkSkill("Tactical Shield Manipulation", 4);
-        checkSkill("Acceleration Control", 4);
-        checkSkill("Spaceship Command", 4);
-        checkSkill("Navigation", 4);
-        checkSkill("Evasive Maneuvering", 4);
-        checkSkill("Warp Drive Operation", 4);
-        checkSkill("Target Management", 4);
-        checkSkill("Signature Analysis", 5);
-        checkSkill("Long Range Targeting", 5);
-        checkSkill("Drones", 5);
-        checkSkill("Drone Interfacing", 4);
-        checkSkill("Drone Navigation", 4);
-        checkSkill("Drone Avionics", 3);
-        checkSkill("Drone Durability", 3);
-        checkSkill("Drone Sharpshooting", 3);
-        checkSkill("Thermodynamics", 4);
-        checkSkill("Nanite Interfacing", 4);
-        checkSkill("Nanite Operation", 4); 
     }
-    
-    private void scimitar()
-    {
-        checkSkill("Minmatar Cruiser", 5);
-        checkSkill("Logistics", 4);
-        checkSkill("Shield Emission Systems", 4);
-        checkSkill("Afterburner", 4);
-        checkSkill("Fuel Conservation", 4);
-        checkSkill("Advanced Target Management", 3);
-        checkSkill("Repair Drone Operation", 4);   
-        checkSkill("Light Drone Operation", 5);
-        checkSkill("Minmatar Drone Specialization", 1);        
+
+    private void saveSkillLists() {
+        ArrayList<HashMap> hashs = new ArrayList<>();
+        hashs.add(baseSkills);
+        hashs.add(basiliskSkills);
+        hashs.add(scimitarSkills);
+        hashs.add(vindicatorSkills);
+        hashs.add(macharielSkills);
+        hashs.add(nightmareSkills);
+        try {
+            File f = new File("hashs.data");
+            FileOutputStream f_out = new FileOutputStream(f);
+            ObjectOutputStream obj_out;
+            obj_out = new ObjectOutputStream(f_out);
+            obj_out.writeObject(hashs);
+        } catch (IOException ex) {
+            System.out.println(ex);
+        }
     }
-    
-    private void basilisk()
-    {
-        checkSkill("Caldari Cruiser", 5);
-        checkSkill("Logistics", 4);
-        checkSkill("Shield Emission Systems", 4);
-        checkSkill("Capacitor Emission Systems", 4);
-        checkSkill("Afterburner", 4);
-        checkSkill("Fuel Conservation", 4);
-        checkSkill("Advanced Target Management", 3);
-        checkSkill("Repair Drone Operation", 4);   
-        checkSkill("Light Drone Operation", 5);
-        checkSkill("Minmatar Drone Specialization", 1);
-        checkSkill("Repair Drone Operation", 4);        
+
+    private void loadSkillLists() {
+        FileInputStream f_in1 = null;
+        File f1 = new File("hashs.data");
+
+        if (f1.exists()) {
+            try {
+                f_in1 = new FileInputStream(f1);
+                ObjectInputStream obj_in1 = new ObjectInputStream(f_in1);
+                ArrayList obj1 = (ArrayList) obj_in1.readObject();
+
+                baseSkills = (HashMap<String, Integer>) obj1.get(0);
+                basiliskSkills = (HashMap<String, Integer>) obj1.get(1);
+                scimitarSkills = (HashMap<String, Integer>) obj1.get(2);
+                vindicatorSkills = (HashMap<String, Integer>) obj1.get(3);
+                macharielSkills = (HashMap<String, Integer>) obj1.get(4);
+                nightmareSkills = (HashMap<String, Integer>) obj1.get(5);
+
+                obj_in1.close();
+                f_in1.close();
+
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(EveBoardGUI.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException | ClassNotFoundException ex) {
+                Logger.getLogger(EveBoardGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
-    
-    private void vindicator()
-    {
-        checkSkill("Minmatar Battleship", 4);
-        checkSkill("Gallente Battleship", 4);
-        checkSkill("High Speed Maneuvering", 4);
-        checkSkill("Controlled Bursts", 4);
-        checkSkill("Gunnery", 5);
-        checkSkill("Large Hybrid Turret", 4);        
-        checkSkill("Motion Prediction", 4);
-        checkSkill("Sharpshooter", 4);   
-        checkSkill("Surgical Strike", 4);
-        checkSkill("Trajectory Analysis", 4);
-        checkSkill("Large Blaster Specialization", 1);  
-        checkSkill("Heavy Drone Operation", 4);
-        checkSkill("Light Drone Operation", 5);
-        checkSkill("Medium Drone Operation", 5);
-        checkSkill("Gallente Drone Specialization", 1);        
+
+//    private void checkSecondarySkill(String skillName, String secondarySkill) {
+//        DefaultTableModel model = (DefaultTableModel) skillTable.getModel();
+//        String skillLvl = skillHash.get(skillName);
+//        if (skillLvl != null) {
+//            int level = Integer.parseInt(skillLvl);
+//            if (level == 5) {
+//                String skillLevel = skillHash.get(secondarySkill);
+//                Object[] row = {secondarySkill, skillLevel, level};
+//                model.addRow(row);
+//            }
+//        }
+//    }
+    private void addSkills(String fileName) {
+        BufferedReader br;
+        HashMap skills = getHash(fileName);
+        try {
+            String currentLine;
+            br = new BufferedReader(new FileReader(fileName + ".txt"));
+            while ((currentLine = br.readLine()) != null) {
+                String[] nameLevel = currentLine.split(",");
+                String name = nameLevel[0];
+                int level = Integer.parseInt(nameLevel[1].trim());
+                skills.put(name, level);
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-    
-    private void machariel()
-    {
-        checkSkill("Minmatar Battleship", 4);
-        checkSkill("Gallente Battleship", 4);
-        checkSkill("High Speed Maneuvering", 4);
-        checkSkill("Science", 5);
-        checkSkill("Gunnery", 5);
-        checkSkill("Large Projectile Turret", 4);        
-        checkSkill("Motion Prediction", 4);
-        checkSkill("Sharpshooter", 4);   
-        checkSkill("Surgical Strike", 4);
-        checkSkill("Trajectory Analysis", 4);
-        checkSkill("Large Artillery Specialization", 1);  
-        checkSkill("Heavy Drone Operation", 4);
-        checkSkill("Light Drone Operation", 5);
-        checkSkill("Minmatar Drone Specialization", 1);        
+
+    public HashMap getHash(String name) {
+        HashMap hm = null;
+        switch (name) {
+            case "vindicatorSkills":
+                hm = vindicatorSkills;
+                break;
+            case "macharielSkills":
+                hm = macharielSkills;
+                break;
+            case "nightmareSkills":
+                hm = nightmareSkills;
+                break;
+            case "scimitarSkills":
+                hm = scimitarSkills;
+                break;
+            case "basiliskSkills":
+                hm = basiliskSkills;
+                break;
+            case "baseSkills":
+                hm = baseSkills;
+                break;
+            case "Vindicator":
+                hm = vindicatorSkills;
+                break;
+            case "Machariel":
+                hm = macharielSkills;
+                break;
+            case "Nightmare":
+                hm = nightmareSkills;
+                break;
+            case "Scimitar":
+                hm = scimitarSkills;
+                break;
+            case "Basilisk":
+                hm = basiliskSkills;
+                break;
+            case "Base Skills":
+                hm = baseSkills;
+                break;
+        }
+        return hm;
     }
-    
-    private void nightmare()
-    {
-        checkSkill("Amarr Battleship", 4);
-        checkSkill("Caldari Battleship", 1);
-        checkSkill("High Speed Maneuvering", 4);
-        checkSkill("Capacitor Emission Systems", 4);
-        checkSkill("Gunnery", 5);
-        checkSkill("Large Energy Turret", 4);        
-        checkSkill("Motion Prediction", 4);
-        checkSkill("Sharpshooter", 4);   
-        checkSkill("Surgical Strike", 4);
-        checkSkill("Trajectory Analysis", 4);
-        checkSkill("Large Beam Laser Specialization", 1);  
-        checkSkill("Heavy Drone Operation", 4);
-        checkSkill("Light Drone Operation", 4);
-        checkSkill("Gallente Drone Specialization", 1);        
-    }
-    
-    private void getCharacter(){
-        try {        
+
+    private void getCharacter() {
+        try {
             URL oracle = new URL(eveboardLink.getText());
             try (BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
                 String inputLine;
-                while ((inputLine = in.readLine()) != null){
-                    if(inputLine.contains("<td height=\"20\" class=\"dotted\" style=\"\"><span style=\"color: #FFCC00;\">") || inputLine.contains("<td height=\"20\" class=\"dotted\" style=\"\">")){                    
-                        String s = inputLine.substring(inputLine.lastIndexOf(">")+1);
+                while ((inputLine = in.readLine()) != null) {
+                    if (inputLine.contains("<td height=\"20\" class=\"dotted\" style=\"\"><span style=\"color: #FFCC00;\">") || inputLine.contains("<td height=\"20\" class=\"dotted\" style=\"\">")) {
+                        String s = inputLine.substring(inputLine.lastIndexOf(">") + 1);
                         String skillName = s.substring(0, s.indexOf(" /"));
                         String levelfluff = in.readLine().trim();
-                        String levelflu = levelfluff.substring(7, levelfluff.indexOf("SP: ")-3);
-                        String level = levelflu; 
+                        String levelflu = levelfluff.substring(7, levelfluff.indexOf("SP: ") - 3);
+                        int level = Integer.parseInt(levelflu);
                         skillHash.put(skillName, level);
                     }
-                    if(inputLine.contains("Error encountered")){errorText.setText("Bad URL");errorText.setForeground(Color.red);break;}
+                    if (inputLine.contains("Error encountered")) {
+                        errorText.setText("Bad URL");
+                        break;
+                    } else if (inputLine.contains("restricted")) {
+                        errorText.setText("Passworded eveboard, please use manual input.");
+                        break;
+                    }
                 }
             }
-            
+
         } catch (MalformedURLException ex) {
             Logger.getLogger(EveBoardGUI.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(EveBoardGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
+    private void getCharacterFromInput() {
+        for (String str : manualInput) {
+            String inputLine = str.trim();
+            if (inputLine.matches(".*\\bRank\\b.*")) {
+                String skillName = inputLine.substring(0, inputLine.indexOf(" /"));
+                String stlevel = inputLine.substring(inputLine.indexOf(": ") + 1, inputLine.indexOf(" / SP")).trim();
+                int level = Integer.parseInt(stlevel);
+                skillHash.put(skillName, level);
+            }
+        }
+    }
+
+    public void resizeColumnWidth(JTable table) {
+        final TableColumnModel columnModel = table.getColumnModel();
+        for (int column = 0; column < table.getColumnCount(); column++) {
+            int width = 50; // Min width
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer renderer = table.getCellRenderer(row, column);
+                Component comp = table.prepareRenderer(renderer, row, column);
+                width = Math.max(comp.getPreferredSize().width, width);
+            }
+            columnModel.getColumn(column).setPreferredWidth(width);
+        }
+    }
+
+    static class MyTableModel extends DefaultTableModel {
+
+        //List<Color> rowColours = new List(Color.RED, Color.GREEN, Color.YELLOW);
+        public Color getRowColour(int row) {
+            return Color.BLACK;
+        }
+
+        public void setRowColour(int row, Color c) {
+
+        }
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -324,6 +660,7 @@ public class EveBoardGUI extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(EveBoardGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -335,12 +672,37 @@ public class EveBoardGUI extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton checkCharButton;
+    private javax.swing.JButton clearDataButton;
+    private javax.swing.JButton configButton;
+    private javax.swing.JTextArea dialogInput;
     private javax.swing.JLabel errorText;
     private javax.swing.JTextField eveboardLink;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JButton loadDefaultButton;
+    private javax.swing.JButton loadSkillListButton;
+    private javax.swing.JButton manualInputButton;
+    private javax.swing.JDialog popoutConfig;
+    private javax.swing.JDialog popoutManualInput;
+    private javax.swing.JButton saveSkillListButton;
+    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JComboBox shipTypeCombox;
+    private javax.swing.JLabel skillEditorAlert;
+    private javax.swing.JTable skillEditorTable;
+    private javax.swing.JComboBox skillListSelector;
     private javax.swing.JTable skillTable;
+    private javax.swing.JButton useDataDialogButton;
     // End of variables declaration//GEN-END:variables
-}
 
+//    private static class myRenderer extends DefaultTableCellRenderer {
+//
+//        @Override
+//        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+//            MyTableModel model = (MyTableModel) table.getModel();
+//            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+//            c.setBackground(model.getRowColour(row));
+//            return c;
+//        }
+//    }
+}
